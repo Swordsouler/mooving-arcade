@@ -1,0 +1,16 @@
+{
+    "appId": "com.mooving.arcade",
+    "productName": "Mooving Arcade",
+    "directories": {
+        "output": "dist"
+    },
+    "files": ["main.js", "public", ".next/**/*", "out/**/*"],
+    "extends": null,
+    "asar": true,
+    "win": {
+        "target": ["portable"]
+    },
+    "mac": {
+        "target": ["dmg"]
+    }
+}
