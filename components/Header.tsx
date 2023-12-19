@@ -54,6 +54,7 @@ export function Header() {
                 transition: "all 0.5s",
                 height: show ? headerHeight + "px" : "0px",
                 overflow: "hidden",
+                boxShadow: "0px 0px 5px 0px var(--color-primary)",
             }}>
             <HeaderButton id='rotate' onClick={rotator.rotate}>
                 <FaArrowRotateRight size={"100%"} />
