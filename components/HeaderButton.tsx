@@ -8,7 +8,7 @@ type HeaderButtonProps = {
     id?: string;
 };
 
-export function Button(props: HeaderButtonProps) {
+export function HeaderButton(props: HeaderButtonProps) {
     const { children, onClick, id } = props;
     const size = 100;
     const style = {

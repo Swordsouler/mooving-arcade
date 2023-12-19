@@ -1,7 +1,7 @@
 import { FaGear } from "react-icons/fa6";
 import { FaArrowRotateRight } from "react-icons/fa6";
 import { FaHouse } from "react-icons/fa6";
-import { Button } from "./HeaderButton";
+import { HeaderButton } from "./HeaderButton";
 import React from "react";
 import { useRouter } from "next/router";
 import { useRotator } from "../providers/RotatorProvider";
@@ -55,29 +55,31 @@ export function Header() {
                 height: show ? headerHeight + "px" : "0px",
                 overflow: "hidden",
             }}>
-            <Button id='rotate' onClick={rotator.rotate}>
+            <HeaderButton id='rotate' onClick={rotator.rotate}>
                 <FaArrowRotateRight size={"100%"} />
-            </Button>
-            <Button id='visibility' onClick={() => setAutoHide(!autoHide)}>
+            </HeaderButton>
+            <HeaderButton
+                id='visibility'
+                onClick={() => setAutoHide(!autoHide)}>
                 {autoHide ? (
                     <FaEyeSlash size={"100%"} />
                 ) : (
                     <FaEye size={"100%"} />
                 )}
-            </Button>
+            </HeaderButton>
             <div
                 style={{
                     float: "right",
                     height: "100%",
                 }}>
                 {pathname === "/settings" ? (
-                    <Button id='home' onClick={"/"}>
+                    <HeaderButton id='home' onClick={"/"}>
                         <FaHouse size={"100%"} />
-                    </Button>
+                    </HeaderButton>
                 ) : (
-                    <Button id='settings' onClick={"/settings"}>
+                    <HeaderButton id='settings' onClick={"/settings"}>
                         <FaGear size={"100%"} />
-                    </Button>
+                    </HeaderButton>
                 )}
             </div>
         </header>
