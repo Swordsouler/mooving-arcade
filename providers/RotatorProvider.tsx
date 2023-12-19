@@ -10,18 +10,27 @@ const RotatorContext = React.createContext({} as RotatorContextType);
 
 function RotatorProvider(props: { children: React.ReactNode }) {
     const { children } = props;
-    const [angle, _setAngle] = React.useState<number>(0);
+    const [angle, _setAngle] = React.useState<number>(
+        Number(window.localStorage.getItem("angle")) || 0
+    );
+
+    React.useEffect(() => {
+        const storedAngle =
+            typeof window !== "undefined"
+                ? Number(window.localStorage.getItem("angle")) || 0
+                : 0;
+        _setAngle(storedAngle);
+    }, []);
 
     const setAngle = (angle: number) => {
-        angle %= 360;
-        localStorage.setItem("angle", angle.toString());
+        localStorage.setItem("angle", (angle % 360).toString());
         _setAngle(angle);
     };
 
     const rotate = () => {
         setAngle(angle + 90);
     };
-    const rotation = angle % 180 !== 0;
+    const rotation = React.useMemo(() => angle % 180 !== 0, [angle]);
 
     return (
         <RotatorContext.Provider
@@ -45,6 +54,7 @@ function RotatorProvider(props: { children: React.ReactNode }) {
                         display: "inline-block",
                         width: rotation ? "100vh" : "100vw",
                         height: rotation ? "100vw" : "100vh",
+                        transition: "all 0.5s",
                     }}>
                     {children}
                 </div>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import "./HeaderButton.css";
+import React from "react";
 
 type HeaderButtonProps = {
     children: React.ReactNode;
@@ -29,6 +30,7 @@ export function Button(props: HeaderButtonProps) {
     } else {
         return (
             <span
+                tabIndex={0}
                 id={id}
                 onClick={onClick}
                 className={"header-button"}

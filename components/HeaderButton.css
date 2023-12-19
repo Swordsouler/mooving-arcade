@@ -2,10 +2,10 @@
     color: var(--color-primary);
     cursor: pointer;
     display: inline-block;
-    transition: all 0.2s ease-in-out;
+    transition: transform 0.2s ease-in-out;
 }
 
-.header-button:hover {
-    color: var(--color-primary);
+.header-button:hover,
+.header-button:focus {
     transform: scale(1.1);
 }
