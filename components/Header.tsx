@@ -8,11 +8,15 @@ import { useRotator } from "../providers/RotatorProvider";
 import { FaEye } from "react-icons/fa6";
 import { FaEyeSlash } from "react-icons/fa6";
 import { useSettings } from "@/providers/SettingsProvider";
+import { FaPen } from "react-icons/fa6";
+import { useGames } from "@/providers/GamesProvider";
+import { FaPencil } from "react-icons/fa6";
 
 export function Header() {
     const rotator = useRotator();
+    const { setEditMode, editMode } = useGames();
     const { pathname } = useRouter();
-    const { headerHeight } = useSettings();
+    const { itemsHeight } = useSettings();
     const [autoHide, _setAutoHide] = React.useState<boolean>(
         localStorage.getItem("header-auto-hide") === "true"
     );
@@ -52,7 +56,7 @@ export function Header() {
         <header
             style={{
                 transition: "all 0.5s",
-                height: show ? headerHeight + "px" : "0px",
+                height: show ? itemsHeight + "px" : "0px",
                 overflow: "hidden",
                 boxShadow: "0px 0px 5px 0px var(--color-primary)",
             }}>
@@ -73,7 +77,18 @@ export function Header() {
                     float: "right",
                     height: "100%",
                 }}>
-                {pathname === "/settings" ? (
+                {pathname === "/" ? (
+                    <HeaderButton
+                        id='edit'
+                        onClick={() => setEditMode(!editMode)}>
+                        {editMode ? (
+                            <FaPencil size={"100%"} />
+                        ) : (
+                            <FaPen size={"100%"} />
+                        )}
+                    </HeaderButton>
+                ) : null}
+                {pathname !== "/" ? (
                     <HeaderButton id='home' onClick={"/"}>
                         <FaHouse size={"100%"} />
                     </HeaderButton>

@@ -30,6 +30,7 @@
 
 .settings input[type="range"],
 .settings input[type="color"],
+.settings input[type="checkbox"],
 .settings select {
     flex: 2;
     height: 40px;
@@ -42,6 +43,16 @@
     background-color: transparent;
     color: var(--color-primary);
     font-size: 1.2em;
+}
+.settings input[type="checkbox"] {
+    appearance: none;
+    width: 20px;
+    position: relative;
+    outline: none;
+    cursor: pointer;
+}
+.settings input[type="checkbox"]:checked {
+    background-color: var(--color-primary);
 }
 
 .settings input[type="color"]::-webkit-color-swatch-wrapper {

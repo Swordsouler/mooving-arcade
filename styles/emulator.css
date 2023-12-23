@@ -1,0 +1,20 @@
+.emulator .emulator-icon {
+    object-fit: cover;
+    fill: var(--color-primary);
+    color: var(--color-primary);
+}
+.emulator {
+    aspect-ratio: 1;
+    transition: transform 0.2s ease-in-out;
+}
+
+.emulator:hover {
+    transform: scale(1.2);
+}
+
+.emulators {
+    display: flex;
+    flex-direction: row;
+    overflow-x: scroll;
+    overflow-y: hidden;
+}

@@ -1,15 +1,16 @@
 import { useSettings } from "@/providers/SettingsProvider";
 import React from "react";
-import "@/styles/settings.css";
 
 const Settings = () => {
     const {
-        headerHeight,
-        setHeaderHeight,
+        itemsHeight,
+        setItemsHeight,
         primaryColor,
         setPrimaryColor,
         secondaryColorIntensity,
         setSecondaryColorIntensity,
+        darkMode,
+        setDarkMode,
         folderBarPlacement,
         setFolderBarPlacement,
     } = useSettings();
@@ -17,20 +18,18 @@ const Settings = () => {
     return (
         <main className='settings'>
             <div>
-                <label htmlFor='header-height'>Hauteur des en têtes</label>
+                <label htmlFor='header-height'>Hauteur des objets</label>
                 <div className='input'>
                     <input
                         type='range'
                         min='50'
                         max='200'
-                        value={headerHeight}
-                        onChange={(e) =>
-                            setHeaderHeight(Number(e.target.value))
-                        }
+                        value={itemsHeight}
+                        onChange={(e) => setItemsHeight(Number(e.target.value))}
                         className='slider'
                         id='header-height'
                     />
-                    <span>{headerHeight}px</span>
+                    <span>{itemsHeight}px</span>
                 </div>
             </div>
 
@@ -51,7 +50,7 @@ const Settings = () => {
                 <div className='input'>
                     <input
                         type='range'
-                        min='25'
+                        min='50'
                         max='100'
                         value={secondaryColorIntensity}
                         onChange={(e) =>
@@ -62,6 +61,16 @@ const Settings = () => {
                     />
                     <span>{secondaryColorIntensity}%</span>
                 </div>
+            </div>
+
+            <div>
+                <label htmlFor='dark-mode'>Mode sombre</label>
+                <input
+                    type='checkbox'
+                    checked={darkMode}
+                    onChange={(e) => setDarkMode(e.target.checked)}
+                    id='dark-mode'
+                />
             </div>
 
             <div>

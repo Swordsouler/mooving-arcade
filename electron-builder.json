@@ -4,7 +4,7 @@
     "directories": {
         "output": "dist"
     },
-    "files": ["main.js", "public", ".next/**/*", "out/**/*"],
+    "files": ["main.js", "preload.js", "public", ".next/**/*", "out/**/*"],
     "extends": null,
     "asar": true,
     "win": {

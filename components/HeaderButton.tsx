@@ -1,5 +1,4 @@
 import Link from "next/link";
-import "./HeaderButton.css";
 import React from "react";
 
 type HeaderButtonProps = {

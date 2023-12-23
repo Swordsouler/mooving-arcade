@@ -51,7 +51,8 @@ function RotatorProvider(props: { children: React.ReactNode }) {
                     style={{
                         position: "absolute",
                         transform: `rotate(${angle}deg)`,
-                        display: "inline-block",
+                        display: "flex",
+                        flexDirection: "column",
                         width: rotation ? "100vh" : "100vw",
                         height: rotation ? "100vw" : "100vh",
                         transition: "all 0.5s",
