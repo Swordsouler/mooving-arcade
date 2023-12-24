@@ -1,159 +1,100 @@
 import { Emulator } from "@/components/Emulator";
 import { Game } from "@/components/Game";
 import { useGames } from "@/providers/GamesProvider";
-import { useSettings } from "@/providers/SettingsProvider";
 import React from "react";
 import { FaPlus } from "react-icons/fa6";
+import { FaStar } from "react-icons/fa6";
 
 const Home = () => {
-    const { games, emulators, currentEmulator, editMode } = useGames();
-    const { itemsHeight, folderBarPlacement } = useSettings();
+    const {
+        games,
+        emulators,
+        currentEmulator,
+        setCurrentEmulator,
+        killProcess,
+        currentGame,
+        pidProcess,
+        lockMode,
+        editMode,
+    } = useGames();
 
     const currentGames = React.useMemo(() => {
+        if (currentEmulator === -1) {
+            return games.filter(
+                (game) => game.favorite !== undefined && game.favorite
+            );
+        }
         return games.filter(
-            (game) => game.emulator === emulators[currentEmulator].name
+            (game) =>
+                emulators[currentEmulator] &&
+                game.emulator === emulators[currentEmulator].name
         );
     }, [currentEmulator, emulators, games]);
 
     return (
-        <main
-            style={{
-                display: "flex",
-                flex: 1,
-                gap: "20px",
-                flexDirection:
-                    folderBarPlacement === "bottom"
-                        ? "column-reverse"
-                        : folderBarPlacement === "left"
-                        ? "row"
-                        : folderBarPlacement === "right"
-                        ? "row-reverse"
-                        : "column",
-            }}>
-            <div
-                className='emulators'
-                style={{
-                    padding: itemsHeight / 8 + "px",
-                    width:
-                        folderBarPlacement === "left" ||
-                        folderBarPlacement === "right"
-                            ? itemsHeight + "px"
-                            : "100%",
-                    height:
-                        folderBarPlacement === "left" ||
-                        folderBarPlacement === "right"
-                            ? "calc(100vh - " + itemsHeight + "px)"
-                            : itemsHeight + "px",
-                    flexDirection:
-                        folderBarPlacement === "left" ||
-                        folderBarPlacement === "right"
-                            ? "column"
-                            : "row",
-                    overflowX:
-                        folderBarPlacement === "left" ||
-                        folderBarPlacement === "right"
-                            ? "hidden"
-                            : "auto",
-                    overflowY:
-                        folderBarPlacement === "left" ||
-                        folderBarPlacement === "right"
-                            ? "auto"
-                            : "hidden",
-                }}>
+        <main className='home'>
+            {(pidProcess !== -1 || lockMode) && (
+                <div
+                    onClick={killProcess}
+                    id='kill-process'
+                    className='overlay'
+                    style={{ background: "rgba(0, 0, 0, 0.5)" }}>
+                    <FaPlus className='kill-button' />
+                </div>
+            )}
+            <div className='emulators'>
                 <Emulator
                     style={{
-                        height: editMode ? itemsHeight + "px" : "0px",
+                        width: editMode ? undefined : "0px",
+                        height: editMode ? undefined : "0px",
+                        paddingRight: editMode ? undefined : "0px",
+                        paddingBottom: editMode ? undefined : "0px",
                     }}
-                    name={"Ajouter un jeu"}
+                    name={"Ajouter un émulateur"}
                     icon={FaPlus}
-                    onClick={"/add-game"}
-                    path={""}
-                    args={""}
+                    onClick={"/add-emulator"}
                 />
                 <Emulator
-                    name={""}
-                    icon={
-                        "https://www.vectorlogo.zone/logos/google/google-icon.svg"
-                    }
-                    path={""}
-                    args={""}
+                    name={"Favoris"}
+                    icon={FaStar}
+                    selected={currentEmulator === -1}
+                    onClick={() => {
+                        setCurrentEmulator(-1);
+                    }}
                 />
-                <Emulator
-                    name={""}
-                    icon={
-                        "https://i.pinimg.com/originals/7c/b4/dd/7cb4dd707f844c353f881696ebe0ada8.png"
-                    }
-                    path={""}
-                    args={""}
-                />
-                <Emulator
-                    name={""}
-                    icon={
-                        "https://i.pinimg.com/originals/7c/b4/dd/7cb4dd707f844c353f881696ebe0ada8.png"
-                    }
-                    path={""}
-                    args={""}
-                />
-                <Emulator
-                    name={""}
-                    icon={
-                        "https://i.pinimg.com/originals/7c/b4/dd/7cb4dd707f844c353f881696ebe0ada8.png"
-                    }
-                    path={""}
-                    args={""}
-                />
-                <Emulator
-                    name={""}
-                    icon={
-                        "https://i.pinimg.com/originals/7c/b4/dd/7cb4dd707f844c353f881696ebe0ada8.png"
-                    }
-                    path={""}
-                    args={""}
-                />
-                <Emulator
-                    name={""}
-                    icon={
-                        "https://i.pinimg.com/originals/7c/b4/dd/7cb4dd707f844c353f881696ebe0ada8.png"
-                    }
-                    path={""}
-                    args={""}
-                />
-                <Emulator
-                    name={""}
-                    icon={
-                        "https://i.pinimg.com/originals/7c/b4/dd/7cb4dd707f844c353f881696ebe0ada8.png"
-                    }
-                    path={""}
-                    args={""}
-                />
-                <Emulator
-                    name={""}
-                    icon={
-                        "https://i.pinimg.com/originals/7c/b4/dd/7cb4dd707f844c353f881696ebe0ada8.png"
-                    }
-                    path={""}
-                    args={""}
-                />
-                <Emulator
-                    name={""}
-                    icon={
-                        "https://i.pinimg.com/originals/7c/b4/dd/7cb4dd707f844c353f881696ebe0ada8.png"
-                    }
-                    path={""}
-                    args={""}
-                />
+                {emulators.map((emulator, index) => {
+                    return (
+                        <Emulator
+                            key={index}
+                            selected={index === currentEmulator}
+                            {...emulator}
+                            onClick={() => {
+                                setCurrentEmulator(index);
+                            }}
+                        />
+                    );
+                })}
             </div>
             <div className='games'>
                 <Game
                     style={{
-                        height: editMode ? itemsHeight + "px" : "0px",
+                        height: editMode ? undefined : "0px",
+                        minHeight: editMode ? undefined : "0px",
+                        maxHeight: editMode ? undefined : "0px",
                     }}
                     name={"Ajouter un jeu"}
                     icon={FaPlus}
                     onClick={"/add-game"}
                 />
                 {currentGames.map((game, index) => {
-                    return <Game key={index} {...game} />;
+                    return (
+                        <Game
+                            key={index}
+                            id={index}
+                            {...game}
+                            selected={index === currentGame}
+                        />
+                    );
                 })}
             </div>
         </main>

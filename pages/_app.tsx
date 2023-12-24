@@ -3,6 +3,7 @@ import "@/styles/emulator.css";
 import "@/styles/game.css";
 import "@/styles/globals.css";
 import "@/styles/header.css";
+import "@/styles/home.css";
 import "@/styles/settings.css";
 import { RotatorProvider } from "@/providers/RotatorProvider";
 import { Controller } from "@/utilities/gamepad";
@@ -12,7 +13,7 @@ import { Header } from "@/components/Header";
 import React from "react";
 import { SettingsProvider } from "@/providers/SettingsProvider";
 import { GamesProvider } from "@/providers/GamesProvider";
-import { useRouter } from "next/router";
+import { GamepadProvider } from "@/providers/GamepadProvider";
 
 export default function MyApp(props: AppProps) {
     const [loaded, setLoaded] = React.useState<boolean>(false);
@@ -35,16 +36,12 @@ export default function MyApp(props: AppProps) {
 }
 
 const App = ({ Component, pageProps }: AppProps) => {
-    const { pathname } = useRouter();
     React.useEffect(() => {
         Controller.init();
     }, []);
-    React.useEffect(() => {
-        console.log(pathname);
-    }, [pathname]);
     return (
-        <SettingsProvider>
-            <RotatorProvider>
+        <RotatorProvider>
+            <SettingsProvider>
                 <GamesProvider>
                     <Head>
                         <title>Mooving Arcade</title>
@@ -52,7 +49,7 @@ const App = ({ Component, pageProps }: AppProps) => {
                     <Header />
                     <Component {...pageProps} />
                 </GamesProvider>
-            </RotatorProvider>
-        </SettingsProvider>
+            </SettingsProvider>
+        </RotatorProvider>
     );
 };

@@ -13,6 +13,15 @@ type GamesContextType = {
     setCurrentEmulator: (currentEmulator: number) => void;
     editMode: boolean;
     setEditMode: (editMode: boolean) => void;
+    lockMode: boolean;
+    pidProcess: number;
+    launchGame: (
+        gamePath: string,
+        emulatorPath: string,
+        args: string,
+        launchDirectoryPath?: string
+    ) => void;
+    killProcess: () => void;
 };
 
 const GamesContext = React.createContext({} as GamesContextType);
@@ -21,13 +30,66 @@ function GamesProvider(props: { children: React.ReactNode }) {
     const { children } = props;
     const [games, _setGames] = React.useState<GameProps[]>([]);
     const [currentGame, _setCurrentGame] = React.useState<number>(
-        Number(localStorage.getItem("current-game")) || 0
+        Number(localStorage.getItem("current-game")) || -1
     );
     const [emulators, _setEmulators] = React.useState<EmulatorProps[]>([]);
     const [currentEmulator, _setCurrentEmulator] = React.useState<number>(
-        Number(localStorage.getItem("current-emulator")) || 0
+        Number(localStorage.getItem("current-emulator")) || -1
     );
     const [editMode, setEditMode] = React.useState<boolean>(false);
+    const [pidProcess, setPidProcess] = React.useState<number>(-1);
+    const [lockMode, setLockMode] = React.useState<boolean>(false);
+
+    async function executePath(
+        mainCommand: string,
+        commandArgs: string,
+        gamePath: string,
+        launchDirectoryPath: string
+    ) {
+        if (!window.electron) return;
+        const pid = await window.electron.invoke("execute-command", {
+            mainCommand,
+            commandArgs,
+            gamePath,
+            launchDirectoryPath,
+        });
+        return pid;
+    }
+
+    React.useEffect(() => {
+        if (!window.electron) return;
+        window.electron.on("process-exit", (pid: number) => {
+            console.log(`Process ${pid} has exited`);
+            setLockMode(false);
+            setPidProcess(-1);
+        });
+        return () => {
+            window.electron.removeAllListeners("process-exit");
+        };
+    }, []);
+
+    async function launchGame(
+        gamePath: string,
+        emulatorPath: string,
+        args: string,
+        launchDirectoryPath?: string
+    ) {
+        setLockMode(true);
+        const pid = await executePath(
+            emulatorPath,
+            args,
+            gamePath,
+            launchDirectoryPath ?? "c:/"
+        );
+        if (!pid) return;
+        setPidProcess(pid);
+    }
+
+    const killProcess = () => {
+        if (!window.electron) return;
+        window.electron.invoke("kill-process", pidProcess);
+        setPidProcess(-1);
+    };
 
     const setGames = (games: GameProps[]) => {
         window.electron.writeFile("../games.json", JSON.stringify(games));
@@ -91,6 +153,10 @@ function GamesProvider(props: { children: React.ReactNode }) {
                 setCurrentEmulator,
                 editMode,
                 setEditMode,
+                lockMode,
+                pidProcess,
+                launchGame,
+                killProcess,
             }}>
             {children}
         </GamesContext.Provider>

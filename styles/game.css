@@ -5,29 +5,51 @@
     flex-direction: row;
     cursor: pointer;
     color: var(--color-primary);
+    width: 100%;
+    height: var(--item-height);
+    min-height: var(--item-height);
+    max-height: var(--item-height);
+    overflow: hidden;
+    transition: all 0.2s ease-in-out;
 }
 
-.game:hover {
+.game:hover,
+.game.selected {
     outline: none;
     background-color: var(--color-primary);
     color: var(--color-secondary);
 }
 
 .game .icon {
-    height: 100%;
+    display: flex;
+    width: var(--item-height);
+    height: var(--item-height);
     aspect-ratio: 1;
-    padding-left: 1px;
 }
 
 .game .icon .game-icon {
-    height: 100%;
-    width: 100%;
+    width: calc(var(--item-height) - 2px);
+    height: calc(var(--item-height) - 2px);
     object-fit: cover;
+    border-bottom-right-radius: calc(var(--item-height) / 16);
+    border: 1px solid var(--color-primary);
 }
 
 .game .icon .emulator-icon {
+    position: relative;
+    width: 0;
+    height: 0;
+}
+.game .icon .emulator-icon img {
     position: absolute;
     background-color: var(--color-secondary);
+    width: calc(var(--item-height) / 4);
+    height: calc(var(--item-height) / 4);
+    border-radius: calc(var(--item-height) / 16);
+    border-bottom-right-radius: calc(var(--item-height) / 16);
+    border: 1px solid var(--color-primary);
+    margin-top: calc(var(--item-height) - var(--item-height) / 4 - 2px);
+    margin-left: calc(var(--item-height) - var(--item-height) / 4 - 2px);
 }
 
 .game .name {
@@ -36,13 +58,16 @@
     justify-content: center;
     flex: 1;
     height: 100%;
+    padding-left: calc(var(--item-height) / 8);
+    padding-right: calc(var(--item-height) / 8);
+    font-size: calc(var(--item-height) / 4);
 }
 
 .game .name .emulator-name {
     opacity: 0.5;
 }
 
-.games {
-    flex: 1;
-    display: flex;
+.game .name .game-name {
+    font-size: calc(var(--item-height) / 3);
+    font-weight: bold;
 }

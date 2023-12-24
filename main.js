@@ -1,5 +1,5 @@
-const { app, BrowserWindow, ipcMain, contextBridge } = require("electron");
-const { exec } = require("child_process");
+const { app, BrowserWindow, ipcMain, dialog } = require("electron");
+const { exec, spawn } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 const isDev = require("electron-is-dev");
@@ -42,21 +42,48 @@ app.on("window-all-closed", () => {
     if (process.platform !== "darwin") app.quit();
 });
 
-ipcMain.handle("execute-command", (event, command) => {
-    console.log(`Executing command: ${command}`);
-    exec(command, (error, stdout, stderr) => {
-        if (error) {
-            console.log(`error: ${error.message}`);
-            return;
-        }
-        if (stderr) {
-            console.log(`stderr: ${stderr}`);
-            return;
-        }
-
-        console.log(`stdout: ${stdout}`);
-    });
+ipcMain.handle("kill-process", async (event, pid) => {
+    process.kill(pid);
 });
+
+ipcMain.handle(
+    "execute-command",
+    async (
+        event,
+        { mainCommand, commandArgs, gamePath, launchDirectoryPath }
+    ) => {
+        const commandArgsArray = commandArgs.split(" ");
+        commandArgsArray.push(gamePath);
+
+        const child = spawn(mainCommand, commandArgsArray, {
+            cwd: launchDirectoryPath, // This can contain spaces
+        });
+
+        child.stdout.on("data", (data) => {
+            console.log(`stdout: ${data}`);
+        });
+
+        child.stderr.on("data", (data) => {
+            console.error(`stderr: ${data}`);
+        });
+
+        child.on("close", (code) => {
+            console.log(`child process exited with code ${code}`);
+            event.sender.send("process-exit", child.pid);
+        });
+
+        child.on("error", (error) => {
+            console.error(`Failed to start child process: ${error}`);
+            dialog.showErrorBox(
+                "Error",
+                `Failed to start child process: ${error}`
+            );
+            event.sender.send("process-exit", child.pid);
+        });
+
+        return child.pid; // Return the PID
+    }
+);
 
 ipcMain.handle("read-file", async (event, filePath) => {
     try {
@@ -77,4 +104,22 @@ ipcMain.handle("write-file", async (event, filePath, data) => {
     } catch (err) {
         console.error(err);
     }
+});
+
+ipcMain.on("open-directory-dialog", (event) => {
+    dialog
+        .showOpenDialog({
+            properties: ["openDirectory"],
+        })
+        .then((result) => {
+            if (!result.canceled) {
+                event.reply("selected-directory", result.filePaths[0]);
+            }
+        })
+        .finally(() => {
+            event.sender.send("dialog-closed");
+        })
+        .catch((err) => {
+            console.log(err);
+        });
 });

@@ -1,34 +1,36 @@
 import { useSettings } from "@/providers/SettingsProvider";
 import React from "react";
-import Image from "next/image";
+import { Icon } from "./Icon";
+import { ClickContainer } from "./ClickContainer";
 
 export type EmulatorProps = {
     name: string;
     icon?: string | React.ReactNode;
-    path: string;
-    args: string;
+    path?: string;
+    args?: string;
+    gameDirectoryPath?: string;
+    launchDirectoryPath?: string;
+    imageDirectoryPath?: string;
     style?: React.CSSProperties;
     onClick?: (() => void) | string;
+    selected?: boolean;
 };
 
 export function Emulator(props: EmulatorProps) {
-    const { name, icon, path, args } = props;
-    const { itemsHeight, folderBarPlacement } = useSettings();
+    const { name, icon, style, onClick = () => {}, selected = false } = props;
+    const { itemsHeight } = useSettings();
     return (
-        <div
-            className='emulator'
-            style={{
-                height: itemsHeight + "px",
-                width: itemsHeight + "px",
-                aspectRatio: "1",
-            }}>
-            <Image
+        <ClickContainer
+            action={onClick}
+            className={"emulator" + (selected ? " selected" : "")}
+            style={style}>
+            <Icon
                 src={icon}
                 alt={name}
                 className='emulator-icon'
                 width={itemsHeight}
                 height={itemsHeight}
             />
-        </div>
+        </ClickContainer>
     );
 }

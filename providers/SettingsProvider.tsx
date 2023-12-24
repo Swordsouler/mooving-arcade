@@ -13,6 +13,8 @@ type SettingsContextType = {
     setDarkMode: (value: boolean) => void;
     folderBarPlacement: FolderBarPlacement;
     setFolderBarPlacement: (value: FolderBarPlacement) => void;
+    showHeader: boolean;
+    setShowHeader: (value: boolean) => void;
 };
 
 const SettingsContext = createContext<SettingsContextType>(
@@ -40,6 +42,9 @@ function SettingsProvider(props: { children: React.ReactNode }) {
                 "folder-bar-placement"
             ) as FolderBarPlacement) ?? "top"
         );
+    const [showHeader, _setShowHeader] = useState<boolean>(
+        localStorage.getItem("show-header") !== "false"
+    );
 
     const setItemsHeight = (value: number) => {
         localStorage.setItem("items-height", value.toString());
@@ -66,6 +71,11 @@ function SettingsProvider(props: { children: React.ReactNode }) {
         _setFolderBarPlacement(value);
     };
 
+    const setShowHeader = (value: boolean) => {
+        localStorage.setItem("show-header", value.toString());
+        _setShowHeader(value);
+    };
+
     React.useEffect(() => {
         const applyColor = () => {
             document.documentElement.style.setProperty(
@@ -85,7 +95,7 @@ function SettingsProvider(props: { children: React.ReactNode }) {
     React.useEffect(() => {
         const applyItemsHeight = () => {
             document.documentElement.style.setProperty(
-                "--items-height",
+                "--item-height",
                 itemsHeight + "px"
             );
         };
@@ -95,12 +105,70 @@ function SettingsProvider(props: { children: React.ReactNode }) {
     React.useEffect(() => {
         const applyFolderBarPlacement = () => {
             document.documentElement.style.setProperty(
-                "--folder-bar-placement",
-                folderBarPlacement
+                "--home-flex-direction",
+                folderBarPlacement === "bottom"
+                    ? "column-reverse"
+                    : folderBarPlacement === "left"
+                    ? "row"
+                    : folderBarPlacement === "right"
+                    ? "row-reverse"
+                    : "column"
+            );
+            document.documentElement.style.setProperty(
+                "--emulators-padding",
+                "calc(var(--item-height) / 8)"
+            );
+            document.documentElement.style.setProperty(
+                "--emulator-padding-right",
+                folderBarPlacement === "left" || folderBarPlacement === "right"
+                    ? "0px"
+                    : "var(--emulators-padding)"
+            );
+            document.documentElement.style.setProperty(
+                "--emulator-padding-bottom",
+                folderBarPlacement === "left" || folderBarPlacement === "right"
+                    ? "var(--emulators-padding)"
+                    : "0px"
+            );
+            document.documentElement.style.setProperty(
+                "--emulators-item-height",
+                "calc(var(--item-height) - 2 * var(--emulators-padding))"
+            );
+            document.documentElement.style.setProperty(
+                "--emulators-width",
+                folderBarPlacement === "left" || folderBarPlacement === "right"
+                    ? "var(--emulators-item-height)"
+                    : "calc(100vw - 2 * var(--emulators-padding))"
+            );
+            document.documentElement.style.setProperty(
+                "--emulators-height",
+                folderBarPlacement === "left" || folderBarPlacement === "right"
+                    ? showHeader
+                        ? "calc(100vh - var(--emulators-item-height) - 4 * var(--emulators-padding))"
+                        : "calc(100vh - 4 * var(--emulators-padding))"
+                    : "var(--emulators-item-height)"
+            );
+            document.documentElement.style.setProperty(
+                "--emulators-flex-direction",
+                folderBarPlacement === "left" || folderBarPlacement === "right"
+                    ? "column"
+                    : "row"
+            );
+            document.documentElement.style.setProperty(
+                "--emulators-overflow-x",
+                folderBarPlacement === "left" || folderBarPlacement === "right"
+                    ? "hidden"
+                    : "auto"
+            );
+            document.documentElement.style.setProperty(
+                "--emulators-overflow-y",
+                folderBarPlacement === "left" || folderBarPlacement === "right"
+                    ? "auto"
+                    : "hidden"
             );
         };
         applyFolderBarPlacement();
-    }, [folderBarPlacement]);
+    }, [folderBarPlacement, showHeader]);
 
     return (
         <SettingsContext.Provider
@@ -115,6 +183,8 @@ function SettingsProvider(props: { children: React.ReactNode }) {
                 setDarkMode,
                 folderBarPlacement,
                 setFolderBarPlacement,
+                showHeader,
+                setShowHeader,
             }}>
             {children}
         </SettingsContext.Provider>

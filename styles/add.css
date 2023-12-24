@@ -3,6 +3,8 @@
     flex-direction: column;
     padding: 20px;
     gap: 20px;
+    height: 100%;
+    overflow-y: scroll;
 }
 
 .add div {
@@ -45,6 +47,7 @@
 
 .add button {
     height: 40px;
+    min-height: 40px;
     border-radius: 5px;
     border: 1px solid var(--color-primary);
     outline: none;

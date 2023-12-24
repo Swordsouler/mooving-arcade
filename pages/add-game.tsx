@@ -1,13 +1,18 @@
 import React, { ChangeEvent, FormEvent, useMemo, useState } from "react";
 import { useGames } from "@/providers/GamesProvider";
 import { EmulatorProps } from "@/components/Emulator";
+import { useRouter } from "next/router";
 
 const AddGame = () => {
     const { emulators, games, setGames } = useGames();
     const [gameName, setGameName] = useState<string>("");
-    const [emulator, setEmulator] = useState<string>("");
+    const [emulator, setEmulator] = useState<string>(
+        emulators !== undefined && emulators.length > 0 ? emulators[0].name : ""
+    );
     const [game, setGamePath] = useState<File | null>(null);
     const [image, setImagePath] = useState<File | null>(null);
+    const router = useRouter();
+
     const gamePath = useMemo(() => {
         if (game) {
             // @ts-ignore
@@ -38,13 +43,13 @@ const AddGame = () => {
                 icon: imagePath,
             },
         ]);
+        router.push("/");
     };
 
     const handleFileChange = (
         e: ChangeEvent<HTMLInputElement>,
         setFile: (file: File | null) => void
     ) => {
-        console.log(e.target.files);
         setFile(e.target.files ? e.target.files[0] : null);
     };
 
