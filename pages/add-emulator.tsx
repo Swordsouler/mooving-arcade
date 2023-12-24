@@ -30,15 +30,12 @@ const AddGame = () => {
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        if (
-            !emulatorName ||
-            !emulatorPath ||
-            !imagePath ||
-            !gameDirectoryPath ||
-            !launchDirectoryPath ||
-            !imageDirectoryPath
-        ) {
+        if (!emulatorName || !emulatorPath || !imagePath) {
             alert("Veuillez remplir tous les champs");
+            return;
+        }
+        if (emulators.find((e) => e.name === emulatorName)) {
+            alert("Un émulateur avec ce nom existe déjà");
             return;
         }
         setEmulators([

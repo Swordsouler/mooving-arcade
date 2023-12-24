@@ -99,6 +99,7 @@ const AddGame = () => {
                         type='file'
                         onChange={(e) => handleFileChange(e, setImagePath)}
                         id='image-path'
+                        accept='image/*'
                     />
                 </label>
             </div>
