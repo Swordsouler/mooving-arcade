@@ -145,7 +145,7 @@ function SettingsProvider(props: { children: React.ReactNode }) {
                 folderBarPlacement === "left" || folderBarPlacement === "right"
                     ? showHeader
                         ? "calc(100vh - var(--emulators-item-height) - 4 * var(--emulators-padding))"
-                        : "calc(100vh - 4 * var(--emulators-padding))"
+                        : "calc(100vh - 2 * var(--emulators-padding))"
                     : "var(--emulators-item-height)"
             );
             document.documentElement.style.setProperty(

@@ -71,3 +71,10 @@
     font-size: calc(var(--item-height) / 3);
     font-weight: bold;
 }
+
+.game .star {
+    height: calc(var(--item-height) / 4);
+    width: calc(var(--item-height) / 4);
+    padding-right: calc(var(--item-height) / 8);
+    aspect-ratio: 1;
+}

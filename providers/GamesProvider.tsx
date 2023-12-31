@@ -3,19 +3,20 @@ import { GameProps } from "@/components/Game";
 import React from "react";
 
 type GamesContextType = {
+    allGames: GameProps[];
     games: GameProps[];
     setGames: (games: GameProps[]) => void;
-    currentGame: number;
-    setCurrentGame: (currentGame: number) => void;
+    toggleFavoriteGame: (name: string, emulator: string) => void;
     emulators: EmulatorProps[];
     setEmulators: (emulators: EmulatorProps[]) => void;
     currentEmulator: number;
     setCurrentEmulator: (currentEmulator: number) => void;
+
     editMode: boolean;
     setEditMode: (editMode: boolean) => void;
     lockMode: boolean;
     pidProcess: number;
-    launchGame: (
+    launchProcess: (
         gamePath: string,
         emulatorPath: string,
         args: string,
@@ -28,17 +29,24 @@ const GamesContext = React.createContext({} as GamesContextType);
 
 function GamesProvider(props: { children: React.ReactNode }) {
     const { children } = props;
-    const [games, _setGames] = React.useState<GameProps[]>([]);
-    const [currentGame, _setCurrentGame] = React.useState<number>(
-        Number(localStorage.getItem("current-game")) || -1
-    );
+    const [allGames, _setGames] = React.useState<GameProps[]>([]);
     const [emulators, _setEmulators] = React.useState<EmulatorProps[]>([]);
-    const [currentEmulator, _setCurrentEmulator] = React.useState<number>(
-        Number(localStorage.getItem("current-emulator")) || -1
+    const [currentEmulator, setCurrentEmulator] = React.useState<number>(
+        parseInt(localStorage.getItem("current-game") ?? "-1")
     );
     const [editMode, setEditMode] = React.useState<boolean>(false);
     const [pidProcess, setPidProcess] = React.useState<number>(-1);
     const [lockMode, setLockMode] = React.useState<boolean>(false);
+
+    const games = React.useMemo(() => {
+        if (currentEmulator === -1) {
+            return allGames.filter(
+                (game) => game.favorite !== undefined && game.favorite
+            );
+        }
+        const emulatorName = emulators[currentEmulator]?.name;
+        return allGames.filter((game) => game.emulator === emulatorName);
+    }, [emulators, currentEmulator, allGames]);
 
     async function executePath(
         mainCommand: string,
@@ -68,12 +76,13 @@ function GamesProvider(props: { children: React.ReactNode }) {
         };
     }, []);
 
-    async function launchGame(
+    async function launchProcess(
         gamePath: string,
         emulatorPath: string,
         args: string,
         launchDirectoryPath?: string
     ) {
+        if (lockMode) return;
         setLockMode(true);
         const pid = await executePath(
             emulatorPath,
@@ -96,11 +105,6 @@ function GamesProvider(props: { children: React.ReactNode }) {
         _setGames(games);
     };
 
-    const setCurrentGame = (currentGame: number) => {
-        localStorage.setItem("current-game", currentGame.toString());
-        _setCurrentGame(currentGame);
-    };
-
     const setEmulators = (emulators: EmulatorProps[]) => {
         window.electron.writeFile(
             "../emulators.json",
@@ -109,9 +113,16 @@ function GamesProvider(props: { children: React.ReactNode }) {
         _setEmulators(emulators);
     };
 
-    const setCurrentEmulator = (currentEmulator: number) => {
-        localStorage.setItem("current-emulator", currentEmulator.toString());
-        _setCurrentEmulator(currentEmulator);
+    const toggleFavoriteGame = (name: string, emulator: string) => {
+        const gameIndex = allGames.findIndex(
+            (game) => game.name === name && game.emulator === emulator
+        );
+        if (gameIndex === -1) return;
+        const game = allGames[gameIndex];
+        game.favorite = !game.favorite;
+        const newGames = [...allGames];
+        newGames[gameIndex] = game;
+        setGames(newGames);
     };
 
     React.useEffect(() => {
@@ -143,10 +154,10 @@ function GamesProvider(props: { children: React.ReactNode }) {
     return (
         <GamesContext.Provider
             value={{
+                allGames,
                 games,
                 setGames,
-                currentGame,
-                setCurrentGame,
+                toggleFavoriteGame,
                 emulators,
                 setEmulators,
                 currentEmulator,
@@ -155,7 +166,7 @@ function GamesProvider(props: { children: React.ReactNode }) {
                 setEditMode,
                 lockMode,
                 pidProcess,
-                launchGame,
+                launchProcess,
                 killProcess,
             }}>
             {children}

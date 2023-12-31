@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { useSettings } from "@/providers/SettingsProvider";
 import React from "react";
-import { FaQuestion } from "react-icons/fa6";
+import { FaQuestion, FaRegStar, FaStar } from "react-icons/fa6";
 import { Icon } from "./Icon";
 import { ClickContainer } from "./ClickContainer";
 import { useGames } from "@/providers/GamesProvider";
@@ -29,7 +29,8 @@ export function Game(props: GameProps) {
         style,
         selected = false,
     } = props;
-    const { emulators, setCurrentGame, launchGame } = useGames();
+    const { emulators, launchProcess, toggleFavoriteGame, editMode } =
+        useGames();
     const { itemsHeight } = useSettings();
     const onClick = React.useMemo(() => {
         if (props.onClick === undefined)
@@ -37,8 +38,7 @@ export function Game(props: GameProps) {
                 const emulator = emulators.filter(
                     (emulator) => emulator.name === props.emulator
                 )[0];
-                setCurrentGame(id);
-                launchGame(
+                launchProcess(
                     path,
                     emulator.path ?? "",
                     emulator.args ?? "",
@@ -46,28 +46,69 @@ export function Game(props: GameProps) {
                 );
             };
         return props.onClick;
-    }, [
-        emulators,
-        id,
-        launchGame,
-        path,
-        props.emulator,
-        props.onClick,
-        setCurrentGame,
-    ]);
+    }, [emulators, launchProcess, path, props.emulator, props.onClick]);
+
+    const emulatorIcon = React.useMemo<string>(() => {
+        if (!props.emulator) return "";
+        const emulator = emulators.filter(
+            (emulator) => emulator.name === props.emulator
+        )[0];
+        return emulator?.icon?.toString() ?? "";
+    }, [emulators, props.emulator]);
+
+    React.useEffect(() => {
+        if (!selected) return;
+        const gameElement = document.getElementById(`game-${id}`);
+        if (gameElement) {
+            gameElement.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [id, selected]);
+
+    const action = React.useMemo<(() => void) | string>(() => {
+        if (editMode && typeof onClick === "function") {
+            const { name, icon, path, emulator } = props;
+            const params = {
+                edit: true,
+                name,
+                icon,
+                path,
+                emulator,
+            };
+
+            const queryString = Object.entries(params)
+                .filter(([key, value]) => value != null)
+                .map(([key, value]) => {
+                    let stringValue;
+                    if (
+                        typeof value === "string" ||
+                        typeof value === "number" ||
+                        typeof value === "boolean"
+                    ) {
+                        stringValue = String(value);
+                    } else {
+                        stringValue = JSON.stringify(value);
+                    }
+                    return `${key}=${stringValue}`;
+                })
+                .join("&");
+
+            return `/add-game?${queryString}`;
+        } else {
+            return onClick;
+        }
+    }, [editMode, onClick, props]);
 
     return (
         <ClickContainer
-            action={onClick}
+            id={`game-${id}`}
+            action={action}
             className={"game" + (selected ? " selected" : "")}
             style={style}>
             <div className='icon'>
-                {emulator !== "" && (
+                {emulatorIcon !== "" && (
                     <div className='emulator-icon'>
                         <Image
-                            src={
-                                "https://i.pinimg.com/originals/7c/b4/dd/7cb4dd707f844c353f881696ebe0ada8.png"
-                            }
+                            src={emulatorIcon}
                             alt={name}
                             width={100}
                             height={100}
@@ -86,6 +127,26 @@ export function Game(props: GameProps) {
                 <p className='game-name'>{name}</p>
                 <p className='emulator-name'>{emulator}</p>
             </div>
+            {typeof action === "function" &&
+                (favorite ? (
+                    <FaStar
+                        className='star'
+                        onClick={(e: React.MouseEvent) => {
+                            if (editMode) return;
+                            e.stopPropagation();
+                            toggleFavoriteGame(name, emulator ?? "");
+                        }}
+                    />
+                ) : (
+                    <FaRegStar
+                        className='star'
+                        onClick={(e: React.MouseEvent) => {
+                            if (editMode) return;
+                            e.stopPropagation();
+                            toggleFavoriteGame(name, emulator ?? "");
+                        }}
+                    />
+                ))}
         </ClickContainer>
     );
 }

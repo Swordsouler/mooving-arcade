@@ -1,9 +1,11 @@
 import { Emulator } from "@/components/Emulator";
 import { Game } from "@/components/Game";
+import { useGamepad } from "@/providers/GamepadProvider";
 import { useGames } from "@/providers/GamesProvider";
 import React from "react";
 import { FaPlus } from "react-icons/fa6";
 import { FaStar } from "react-icons/fa6";
+import Image from "next/image";
 
 const Home = () => {
     const {
@@ -12,27 +14,62 @@ const Home = () => {
         currentEmulator,
         setCurrentEmulator,
         killProcess,
-        currentGame,
         pidProcess,
         lockMode,
         editMode,
     } = useGames();
-
-    const currentGames = React.useMemo(() => {
-        if (currentEmulator === -1) {
-            return games.filter(
-                (game) => game.favorite !== undefined && game.favorite
-            );
+    const { currentGame, setCurrentGame } = useGamepad();
+    const background = React.useMemo(() => {
+        //type of string
+        if (
+            games[currentGame] &&
+            games[currentGame].icon &&
+            typeof games[currentGame].icon === "string"
+        ) {
+            return games[currentGame].icon?.toString();
         }
-        return games.filter(
-            (game) =>
-                emulators[currentEmulator] &&
-                game.emulator === emulators[currentEmulator].name
-        );
-    }, [currentEmulator, emulators, games]);
+        return "";
+    }, [games, currentGame]);
+
+    React.useEffect(() => {
+        // lorsqu'on appuis sur une lettre ou un chiffre du clavier, on sélectionne le premier jeu qui commence par cette lettre ou ce chiffre
+        // si on appuis sur une lettre ou un chiffre qui n'est pas associé à un jeu, on ne fait rien
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key.length === 1) {
+                const index = games.findIndex((game) => {
+                    return game.name[0].toLowerCase() === e.key.toLowerCase();
+                });
+                if (index !== -1) {
+                    setCurrentGame(index);
+                }
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [games, setCurrentGame]);
+
+    const [hasError, setHasError] = React.useState(false);
+
+    React.useEffect(() => {
+        setHasError(false); // réinitialiser l'état d'erreur lorsque l'arrière-plan change
+    }, [background]);
 
     return (
         <main className='home'>
+            {!hasError && background?.toString() && (
+                <Image
+                    id='background'
+                    alt='background'
+                    width={100}
+                    height={100}
+                    src={background?.toString() ?? ""}
+                    onError={(e) => {
+                        setHasError(true);
+                    }}
+                />
+            )}
             {(pidProcess !== -1 || lockMode) && (
                 <div
                     onClick={killProcess}
@@ -75,7 +112,7 @@ const Home = () => {
                     );
                 })}
             </div>
-            <div className='games'>
+            <div className='games' id='games'>
                 <Game
                     style={{
                         height: editMode ? undefined : "0px",
@@ -86,7 +123,7 @@ const Home = () => {
                     icon={FaPlus}
                     onClick={"/add-game"}
                 />
-                {currentGames.map((game, index) => {
+                {games.map((game, index) => {
                     return (
                         <Game
                             key={index}

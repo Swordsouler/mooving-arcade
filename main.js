@@ -15,6 +15,8 @@ const createWindow = () => {
         },
     });
 
+    mainWindow.setMenuBarVisibility(false);
+
     mainWindow.webContents.setWindowOpenHandler(({ url }) => {
         // Ici, nous interceptons toute tentative d'ouverture d'une nouvelle fenêtre.
         // Nous pouvons choisir de l'ouvrir dans le navigateur par défaut, de l'ouvrir dans une nouvelle fenêtre Electron,
@@ -56,7 +58,7 @@ ipcMain.handle(
         commandArgsArray.push(gamePath);
 
         const child = spawn(mainCommand, commandArgsArray, {
-            cwd: launchDirectoryPath, // This can contain spaces
+            cwd: launchDirectoryPath,
         });
 
         child.stdout.on("data", (data) => {
@@ -122,4 +124,40 @@ ipcMain.on("open-directory-dialog", (event) => {
         .catch((err) => {
             console.log(err);
         });
+});
+
+ipcMain.handle("scan-games", async (event, args) => {
+    const { emulatorName, gameDirectoryPath, imageDirectoryPath, extension } =
+        args;
+
+    // Vérifiez si le chemin du répertoire de jeu existe
+    if (!fs.existsSync(gameDirectoryPath)) {
+        throw new Error(
+            `Le chemin du répertoire de jeu n'existe pas: ${gameDirectoryPath}`
+        );
+    }
+
+    // Lire le contenu du répertoire de jeu
+    const directoryContents = fs.readdirSync(gameDirectoryPath);
+
+    // Filtrer les fichiers par extension
+    const gameFiles = directoryContents.filter(
+        (file) => path.extname(file) === extension
+    );
+
+    // Créer une liste de jeux
+    const games = gameFiles.map((file) => {
+        return {
+            name: path.basename(file, extension),
+            path: path.join(gameDirectoryPath, file),
+            icon: path.join(
+                imageDirectoryPath,
+                path.basename(file, extension) + ".png"
+            ),
+            emulator: emulatorName,
+            // Ajoutez d'autres propriétés de jeu ici
+        };
+    });
+
+    return games;
 });

@@ -20,20 +20,30 @@ export function Icon(props: IconProps) {
         className = "",
         style,
     } = props;
+    const [icon, setIcon] = React.useState<string | React.ReactNode>(src);
 
-    if (!src) return null;
-    if (typeof src === "string") {
+    React.useEffect(() => {
+        setIcon(src);
+    }, [src]);
+
+    if (!icon) return null;
+    if (typeof icon === "string") {
         return (
             <Image
-                src={src}
+                src={icon}
                 alt={alt}
                 className={className}
                 width={width}
                 height={height}
                 style={style}
+                onError={(e) => {
+                    setIcon(FaQuestion);
+                }}
             />
         );
+    } else if (React.isValidElement(icon)) {
+        return React.cloneElement(icon, props);
     } else {
-        return src(props);
+        return null;
     }
 }

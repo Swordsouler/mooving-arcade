@@ -6,7 +6,6 @@ import "@/styles/header.css";
 import "@/styles/home.css";
 import "@/styles/settings.css";
 import { RotatorProvider } from "@/providers/RotatorProvider";
-import { Controller } from "@/utilities/gamepad";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import { Header } from "@/components/Header";
@@ -36,18 +35,17 @@ export default function MyApp(props: AppProps) {
 }
 
 const App = ({ Component, pageProps }: AppProps) => {
-    React.useEffect(() => {
-        Controller.init();
-    }, []);
     return (
         <RotatorProvider>
             <SettingsProvider>
                 <GamesProvider>
-                    <Head>
-                        <title>Mooving Arcade</title>
-                    </Head>
-                    <Header />
-                    <Component {...pageProps} />
+                    <GamepadProvider>
+                        <Head>
+                            <title>Mooving Arcade</title>
+                        </Head>
+                        <Header />
+                        <Component {...pageProps} />
+                    </GamepadProvider>
                 </GamesProvider>
             </SettingsProvider>
         </RotatorProvider>

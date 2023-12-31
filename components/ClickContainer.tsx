@@ -7,14 +7,16 @@ export type ClickContainerProps = {
     action: (() => void) | string;
     style?: React.CSSProperties;
     className?: string;
+    id?: string;
 };
 
 export const ClickContainer = (props: ClickContainerProps) => {
-    const { children, action, style, className } = props;
+    const { children, action, style, className, id } = props;
 
     if (typeof action === "string") {
         return (
             <Link
+                id={id}
                 className={className}
                 href={action}
                 style={{
@@ -26,7 +28,7 @@ export const ClickContainer = (props: ClickContainerProps) => {
         );
     } else {
         return (
-            <div className={className} onClick={action} style={style}>
+            <div className={className} onClick={action} style={style} id={id}>
                 {children}
             </div>
         );

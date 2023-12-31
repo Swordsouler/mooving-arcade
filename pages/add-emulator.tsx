@@ -1,18 +1,40 @@
 import React, { ChangeEvent, FormEvent, useMemo, useState } from "react";
 import { useGames } from "@/providers/GamesProvider";
-import { useEffect } from "react";
 import { useRouter } from "next/router";
+import { GameProps } from "@/components/Game";
 
 const AddGame = () => {
-    const { emulators, setEmulators } = useGames();
-    const [emulatorName, setEmulatorName] = useState<string>("");
-    const [args, setArgs] = useState<string>("");
-    const [emulator, setEmulatorPath] = useState<File | null>(null);
-    const [image, setImagePath] = useState<File | null>(null);
-    const [gameDirectoryPath, setGameDirectoryPath] = useState<string>("");
-    const [launchDirectoryPath, setLaunchDirectoryPath] = useState<string>("");
-    const [imageDirectoryPath, setImageDirectoryPath] = useState<string>("");
+    //get params
     const router = useRouter();
+    console.log(router.query);
+
+    const { emulators, setEmulators, setGames, allGames } = useGames();
+    const [emulatorName, setEmulatorName] = useState<string>(
+        (router.query.name as string) ?? ""
+    );
+    const [args, setArgs] = useState<string>(
+        (router.query.args as string) ?? ""
+    );
+    const [extension, setExtension] = useState<string>(
+        (router.query.extension as string) ?? "."
+    );
+    const [emulator, setEmulatorPath] = useState<File | null>(
+        // @ts-ignore
+        router.query.path ? { path: router.query.path as string } : null
+    );
+    const [image, setImagePath] = useState<File | null>(
+        // @ts-ignore
+        router.query.icon ? { path: router.query.icon as string } : null
+    );
+    const [gameDirectoryPath, setGameDirectoryPath] = useState<string>(
+        (router.query.gameDirectoryPath as string) ?? ""
+    );
+    const [launchDirectoryPath, setLaunchDirectoryPath] = useState<string>(
+        (router.query.launchDirectoryPath as string) ?? ""
+    );
+    const [imageDirectoryPath, setImageDirectoryPath] = useState<string>(
+        (router.query.imageDirectoryPath as string) ?? ""
+    );
 
     const emulatorPath = useMemo(() => {
         if (emulator) {
@@ -28,28 +50,51 @@ const AddGame = () => {
         }
     }, [image]);
 
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = (e: any) => {
         e.preventDefault();
         if (!emulatorName || !emulatorPath || !imagePath) {
             alert("Veuillez remplir tous les champs");
             return;
         }
-        if (emulators.find((e) => e.name === emulatorName)) {
-            alert("Un émulateur avec ce nom existe déjà");
-            return;
+        if (router.query.edit === "true") {
+            const newEmulators = emulators.map((e) => {
+                if (e.name === router.query.name) {
+                    return {
+                        name: emulatorName,
+                        path: emulatorPath,
+                        args: args,
+                        icon: imagePath,
+                        gameDirectoryPath: gameDirectoryPath,
+                        launchDirectoryPath: launchDirectoryPath,
+                        imageDirectoryPath: imageDirectoryPath,
+                        extension: extension,
+                    };
+                }
+                return e;
+            });
+            setEmulators(newEmulators);
+        } else {
+            if (
+                emulators.find((e) => e.name === emulatorName) ||
+                emulatorName === "Favoris"
+            ) {
+                alert("Un émulateur avec ce nom existe déjà");
+                return;
+            }
+            setEmulators([
+                ...emulators,
+                {
+                    name: emulatorName,
+                    path: emulatorPath,
+                    args: args,
+                    icon: imagePath,
+                    gameDirectoryPath: gameDirectoryPath,
+                    launchDirectoryPath: launchDirectoryPath,
+                    imageDirectoryPath: imageDirectoryPath,
+                    extension: extension,
+                },
+            ]);
         }
-        setEmulators([
-            ...emulators,
-            {
-                name: emulatorName,
-                path: emulatorPath,
-                args: args,
-                icon: imagePath,
-                gameDirectoryPath: gameDirectoryPath,
-                launchDirectoryPath: launchDirectoryPath,
-                imageDirectoryPath: imageDirectoryPath,
-            },
-        ]);
         router.push("/");
     };
 
@@ -83,15 +128,66 @@ const AddGame = () => {
         });
     }
 
+    const scanGames = () => {
+        // scanner les jeux qui ont l'extension "extension" dans le dossier "gameDirectoryPath"
+        // et effacer tout les qui ont le nom de l'émulateur
+        // et ajouter les jeux dans la liste des jeux
+        if (!window.electron) return;
+
+        window.electron
+            .invoke("scan-games", {
+                emulatorName,
+                gameDirectoryPath,
+                imageDirectoryPath,
+                extension,
+            })
+            .then((games: GameProps[]) => {
+                console.log(games);
+                // if the game name is the same and emulator is the same, just don't add it
+                const newGames = games.filter(
+                    (game) =>
+                        !allGames.find(
+                            (g) =>
+                                g.name === game.name &&
+                                g.emulator === game.emulator
+                        )
+                );
+                setGames([...allGames, ...newGames]);
+                //submit the form
+                handleSubmit(new Event("submit"));
+            })
+            .catch((err: any) => {
+                console.log(err);
+                alert("Erreur lors du scan des jeux: " + err);
+            });
+    };
+
+    const deleteEmulator = () => {
+        // ask for confirmation
+        if (!confirm("Voulez-vous vraiment supprimer cet émulateur ?")) return;
+
+        const newEmulators = emulators.filter(
+            (emulator) => emulator.name !== router.query.name
+        );
+        setEmulators(newEmulators);
+
+        const newGames = allGames.filter(
+            (game) => game.emulator !== router.query.name
+        );
+        setGames(newGames);
+        router.push("/");
+    };
+
     return (
         <>
             {dialogOpen && <div className='overlay'></div>}
-            <form onSubmit={handleSubmit} className='add'>
+            <form onSubmit={handleSubmit} className='add' id='form'>
                 <div>
                     <label htmlFor='emulator-name'>
                         Nom de l&apos;émulateur
                     </label>
                     <input
+                        disabled={router.query.edit === "true"}
                         type='text'
                         value={emulatorName}
                         onChange={(e) => setEmulatorName(e.target.value)}
@@ -143,23 +239,6 @@ const AddGame = () => {
 
                 <div>
                     <label htmlFor='game-path'>
-                        Chemin du dossier vers les jeux
-                    </label>
-                    <label className='input'>
-                        {gameDirectoryPath}
-                        <input
-                            style={{ width: "100%", visibility: "hidden" }}
-                            type='button'
-                            id='game-path'
-                            onClick={() =>
-                                selectDirectory(setGameDirectoryPath)
-                            }
-                        />
-                    </label>
-                </div>
-
-                <div>
-                    <label htmlFor='game-path'>
                         Chemin du dossier de lancement
                     </label>
                     <label className='input'>
@@ -170,6 +249,23 @@ const AddGame = () => {
                             id='game-path'
                             onClick={() =>
                                 selectDirectory(setLaunchDirectoryPath)
+                            }
+                        />
+                    </label>
+                </div>
+
+                <div>
+                    <label htmlFor='game-path'>
+                        Chemin du dossier vers les jeux
+                    </label>
+                    <label className='input'>
+                        {gameDirectoryPath}
+                        <input
+                            style={{ width: "100%", visibility: "hidden" }}
+                            type='button'
+                            id='game-path'
+                            onClick={() =>
+                                selectDirectory(setGameDirectoryPath)
                             }
                         />
                     </label>
@@ -192,8 +288,37 @@ const AddGame = () => {
                     </label>
                 </div>
 
-                <button type='submit'>Ajouter l&apos;émulateur</button>
-                <button type='button'>Scanner les jeux</button>
+                <div>
+                    <label htmlFor='extension'>
+                        Extension des fichiers de jeux
+                    </label>
+                    <input
+                        type='text'
+                        value={extension}
+                        onChange={(e) => {
+                            // the first character is always a dot
+                            if (e.target.value[0] !== ".") {
+                                setExtension("." + e.target.value);
+                            } else {
+                                setExtension(e.target.value);
+                            }
+                        }}
+                        id='extension'
+                    />
+                </div>
+
+                <button type='submit'>
+                    {router.query.edit ? "Modifier" : "Ajouter"}{" "}
+                    l&apos;émulateur
+                </button>
+                {router.query.edit && (
+                    <button type='button' onClick={deleteEmulator}>
+                        Supprimer l&apos;émulateur
+                    </button>
+                )}
+                <button type='button' onClick={scanGames}>
+                    Scanner les jeux
+                </button>
             </form>
         </>
     );
