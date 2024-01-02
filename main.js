@@ -3,11 +3,14 @@ const { exec, spawn } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 const isDev = require("electron-is-dev");
+const Store = require("electron-store");
+const store = new Store();
 
 const createWindow = () => {
     const mainWindow = new BrowserWindow({
         width: 800,
         height: 600,
+        fullscreen: store.get("fullscreen", false), // get fullscreen state from store
         webPreferences: {
             preload: path.join(__dirname, "preload.js"), // set preload script
             nodeIntegration: false,
@@ -16,6 +19,10 @@ const createWindow = () => {
     });
 
     mainWindow.setMenuBarVisibility(false);
+
+    mainWindow.on("close", () => {
+        store.set("fullscreen", mainWindow.isFullScreen()); // save fullscreen state on close
+    });
 
     mainWindow.webContents.setWindowOpenHandler(({ url }) => {
         // Ici, nous interceptons toute tentative d'ouverture d'une nouvelle fenêtre.

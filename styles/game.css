@@ -40,9 +40,11 @@
     width: 0;
     height: 0;
 }
-.game .icon .emulator-icon img {
+
+.game .icon .emulator-icon img,
+.game .icon .emulator-icon svg {
     position: absolute;
-    background-color: var(--color-secondary);
+    color: var(--color-primary);
     width: calc(var(--item-height) / 4);
     height: calc(var(--item-height) / 4);
     border-radius: calc(var(--item-height) / 16);
@@ -50,6 +52,15 @@
     border: 1px solid var(--color-primary);
     margin-top: calc(var(--item-height) - var(--item-height) / 4 - 2px);
     margin-left: calc(var(--item-height) - var(--item-height) / 4 - 2px);
+    transition: all 0.2s ease-in-out;
+}
+
+.game.selected .icon .emulator-icon img,
+.game.selected .icon .emulator-icon svg,
+.game:hover .icon .emulator-icon img,
+.game:hover .icon .emulator-icon svg {
+    border: 1px solid var(--color-secondary);
+    color: var(--color-secondary);
 }
 
 .game .name {

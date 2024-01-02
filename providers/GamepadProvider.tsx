@@ -16,13 +16,13 @@ type GamepadConfig = { delay: number; inputs: Inputs };
 const defaultGamepadConfig: GamepadConfig = {
     delay: 200,
     inputs: {
-        launch: [9],
-        close: [8],
-        next_emulator: [1],
-        previous_emulator: [0],
-        next_game: [5],
-        previous_game: [4],
-        toggle_favorite: [6],
+        launch: [10],
+        close: [9],
+        next_emulator: [2],
+        previous_emulator: [1],
+        next_game: [6],
+        previous_game: [5],
+        toggle_favorite: [7],
     },
 };
 
@@ -196,7 +196,7 @@ function GamepadProvider(props: { children: React.ReactNode }) {
                             for (const action in gamepadConfig.inputs) {
                                 const inputs =
                                     gamepadConfig.inputs[action as Action];
-                                if (inputs.includes(buttonID)) {
+                                if (inputs.includes(buttonID + 1)) {
                                     switch (action) {
                                         case "launch":
                                             launchGame();

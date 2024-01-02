@@ -59,10 +59,30 @@ export function Game(props: GameProps) {
     React.useEffect(() => {
         if (!selected) return;
         const gameElement = document.getElementById(`game-${id}`);
-        if (gameElement) {
-            gameElement.scrollIntoView({ behavior: "smooth" });
+        const gamesDiv = document.getElementById("games");
+        if (gameElement && gamesDiv) {
+            const rect = gameElement.getBoundingClientRect();
+            const gamesRect = gamesDiv.getBoundingClientRect();
+            const top = rect.top - gamesRect.top;
+            const bottom = top + rect.height;
+            const isVisible = top >= 0 && bottom <= gamesRect.height;
+            if (!isVisible) {
+                if (top < 0) {
+                    // Le jeu est au-dessus de la zone visible, faire défiler jusqu'au haut du jeu
+                    gamesDiv.scrollTo({
+                        top: gamesDiv.scrollTop + top,
+                        behavior: "smooth",
+                    });
+                } else {
+                    // Le jeu est en dessous de la zone visible, faire défiler jusqu'au bas du jeu
+                    gamesDiv.scrollTo({
+                        top: gamesDiv.scrollTop + bottom - gamesRect.height,
+                        behavior: "smooth",
+                    });
+                }
+            }
         }
-    }, [id, selected]);
+    }, [id, selected, itemsHeight]);
 
     const action = React.useMemo<(() => void) | string>(() => {
         if (editMode && typeof onClick === "function") {
@@ -107,7 +127,7 @@ export function Game(props: GameProps) {
             <div className='icon'>
                 {emulatorIcon !== "" && (
                     <div className='emulator-icon'>
-                        <Image
+                        <Icon
                             src={emulatorIcon}
                             alt={name}
                             width={100}

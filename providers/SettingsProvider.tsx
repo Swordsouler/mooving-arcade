@@ -138,14 +138,12 @@ function SettingsProvider(props: { children: React.ReactNode }) {
                 "--emulators-width",
                 folderBarPlacement === "left" || folderBarPlacement === "right"
                     ? "var(--emulators-item-height)"
-                    : "calc(100vw - 2 * var(--emulators-padding))"
+                    : "calc(100% - 2 * var(--emulators-padding))"
             );
             document.documentElement.style.setProperty(
                 "--emulators-height",
                 folderBarPlacement === "left" || folderBarPlacement === "right"
-                    ? showHeader
-                        ? "calc(100vh - var(--emulators-item-height) - 4 * var(--emulators-padding))"
-                        : "calc(100vh - 2 * var(--emulators-padding))"
+                    ? "calc(100% - 2 * var(--emulators-padding))"
                     : "var(--emulators-item-height)"
             );
             document.documentElement.style.setProperty(
