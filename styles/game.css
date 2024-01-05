@@ -13,7 +13,7 @@
     transition: all 0.2s ease-in-out;
 }
 
-.game:hover,
+/*.game:hover,*/
 .game.selected {
     outline: none;
     background-color: var(--color-primary);

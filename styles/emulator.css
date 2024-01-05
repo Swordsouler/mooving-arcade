@@ -19,7 +19,7 @@
     padding-bottom: var(--emulator-padding-bottom);
 }
 
-.emulator:hover,
+/*.emulator:hover,*/
 .emulator.selected {
     transform: scale(1.2);
 }
