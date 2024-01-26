@@ -126,7 +126,7 @@ const Home = () => {
                 {games.map((game, index) => {
                     return (
                         <Game
-                            key={index}
+                            key={game.name + "-" + game.emulator}
                             id={index}
                             {...game}
                             selected={index === currentGame}

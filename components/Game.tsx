@@ -204,5 +204,7 @@ export const Game = React.memo(
             </ClickContainer>
         );
     },
-    (prevProps, nextProps) => prevProps.selected === nextProps.selected
+    (prevProps, nextProps) =>
+        prevProps.selected === nextProps.selected &&
+        prevProps.favorite === nextProps.favorite
 );
